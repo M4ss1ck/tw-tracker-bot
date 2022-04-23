@@ -56,6 +56,34 @@ async function newFollowers(currentFollower) {
   }
 }
 
+async function newFollowing(currentFollowing) {
+  const info = await prisma.following
+    .findUnique({
+      where: {
+        userId: currentFollowing.id,
+      },
+    })
+    .catch((e) => console.log(e));
+  if (info === null) {
+    await prisma.following
+      .create({
+        data: {
+          userId: currentFollowing.id,
+          name: currentFollowing.name,
+          username: currentFollowing.username,
+        },
+      })
+      .then(() => {
+        const text = "Now following: " + currentFollowing.name;
+        console.log(text);
+      })
+      .catch((e) => console.log(e))
+      .finally(async () => {
+        await prisma.$disconnect();
+      });
+  }
+}
+
 async function trackUnfollows(idList) {
   const badPeople = await prisma.follower
     .findMany({
@@ -81,18 +109,33 @@ async function trackUnfollows(idList) {
             userId: f.userId,
           },
         })
-        .then(() => console.log("Deleted"))
+        .then(() => {
+          console.log("Deleted");
+        })
         .catch((e) => console.log(e));
+      await prisma.deleted.create({
+        data: {
+          userId: f.userId,
+        },
+      });
     }
   }
 }
 
-async function countStoredFollowers() {
-  const count = await prisma.follower.count().catch((e) => console.log(e));
-  console.log("Stored: " + count + "\nIn Twitter: " + followers_count);
+async function comparison() {
+  const followerCount = await prisma.follower
+    .count()
+    .catch((e) => console.log(e));
+  const followingCount = await prisma.following
+    .count()
+    .catch((e) => console.log(e));
+
+  console.log(
+    `Followers in DB: ${followerCount}\nIn Twitter: ${followers_count}\nFollowing in DB: ${followingCount}\nIn Twitter: ${friends_count}`
+  );
 }
 
-async function followLoop() {
+async function followersLoop() {
   let idList = [];
   // followers ={id, name, username}
   const followers = await client.v2.followers(id, { asPaginator: true });
@@ -103,5 +146,20 @@ async function followLoop() {
   await trackUnfollows(idList);
 }
 
-followLoop();
-countStoredFollowers();
+async function followingloop() {
+  let idList = [];
+  // following ={id, name, username}
+  const iAmFollowing = await client.v2.following(id, { asPaginator: true });
+  for await (const following of iAmFollowing) {
+    idList.push(following.id);
+    await newFollowing(following);
+  }
+}
+
+async function main() {
+  await followingloop();
+  await followersLoop();
+  await comparison();
+}
+
+main();
