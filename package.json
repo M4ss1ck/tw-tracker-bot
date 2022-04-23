@@ -1,0 +1,24 @@
+{
+  "name": "tw-tracker-bot",
+  "version": "1.0.0",
+  "description": "Twitter bot for tracking unfollows (and other stuff)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node -r dotenv/config index.js"
+  },
+  "keywords": [
+    "twitter",
+    "bot"
+  ],
+  "type": "module",
+  "author": "M4ss1ck",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@prisma/client": "^3.12.0",
+    "dotenv": "^16.0.0",
+    "twitter-api-v2": "^1.12.0"
+  },
+  "devDependencies": {
+    "prisma": "^3.12.0"
+  }
+}
