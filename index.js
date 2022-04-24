@@ -1,5 +1,9 @@
 import { TwitterApi } from "twitter-api-v2";
 import Prisma from "@prisma/client";
+import { TelegramClient } from "telegram";
+import Sesion from "telegram/sessions";
+
+const { StringSession } = Sesion;
 
 const { PrismaClient } = Prisma;
 const prisma = new PrismaClient();
@@ -11,12 +15,23 @@ const client = new TwitterApi({
   accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
+const apiId = parseInt(process.env.API_ID);
+const apiHash = process.env.API_HASH;
+const stringSession = new StringSession(process.env.SESSION);
+
+const tgClient = new TelegramClient(stringSession, apiId, apiHash, {
+  connectionRetries: 5,
+});
+
+await tgClient.connect();
+
 const {
   name,
   id_str: id,
   followers_count,
   friends_count,
 } = await client.currentUser();
+
 const summary = `${name} (id: ${id}) has ${followers_count} followers and is following ${friends_count} accounts.`;
 console.log(summary);
 
@@ -45,9 +60,12 @@ async function newFollowers(currentFollower) {
           username: currentFollower.username,
         },
       })
-      .then(() => {
-        const text = "New follower: " + currentFollower.name;
+      .then(async () => {
+        const text = `New follower: ${currentFollower.name} (https://twitter.com/${currentFollower.username})`;
         console.log(text);
+        await tgClient
+          .sendMessage("me", { message: text })
+          .catch((e) => console.log(e));
       })
       .catch((e) => console.log(e))
       .finally(async () => {
@@ -73,9 +91,12 @@ async function newFollowing(currentFollowing) {
           username: currentFollowing.username,
         },
       })
-      .then(() => {
-        const text = "Now following: " + currentFollowing.name;
+      .then(async () => {
+        const text = `Now following: ${currentFollowing.name} (https://twitter.com/${currentFollowing.username})`;
         console.log(text);
+        await tgClient
+          .sendMessage("me", { message: text })
+          .catch((e) => console.log(e));
       })
       .catch((e) => console.log(e))
       .finally(async () => {
@@ -100,7 +121,11 @@ async function trackUnfollows(idList) {
   if (badPeople.length > 0) {
     for (let i = 0; i < badPeople.length; i++) {
       const f = badPeople[i];
-      console.log(f.name + " (@" + f.username + ") unfollowed me");
+      const text = `${f.name} (https://twitter.com/${f.username}) unfollowed you.`;
+      await tgClient
+        .sendMessage("me", { message: text })
+        .catch((e) => console.log(e));
+      console.log(text);
       console.log(f);
       // borrar de la base de datos
       await prisma.follower
@@ -129,10 +154,11 @@ async function comparison() {
   const followingCount = await prisma.following
     .count()
     .catch((e) => console.log(e));
-
-  console.log(
-    `Followers in DB: ${followerCount}\nIn Twitter: ${followers_count}\nFollowing in DB: ${followingCount}\nIn Twitter: ${friends_count}`
-  );
+  const text = `Followers in DB: ${followerCount}\nIn Twitter: ${followers_count}\nFollowing in DB: ${followingCount}\nIn Twitter: ${friends_count}`;
+  console.log(text);
+  await tgClient
+    .sendMessage("me", { message: text })
+    .catch((e) => console.log(e));
 }
 
 async function followersLoop() {
@@ -160,6 +186,7 @@ async function main() {
   await followingloop();
   await followersLoop();
   await comparison();
+  process.exit(0);
 }
 
 main();

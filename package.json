@@ -4,7 +4,7 @@
   "description": "Twitter bot for tracking unfollows (and other stuff)",
   "main": "index.js",
   "scripts": {
-    "start": "node -r dotenv/config index.js"
+    "start": "node -r dotenv/config --experimental-specifier-resolution=node index.js"
   },
   "keywords": [
     "twitter",
@@ -16,6 +16,8 @@
   "dependencies": {
     "@prisma/client": "^3.12.0",
     "dotenv": "^16.0.0",
+    "input": "^1.0.1",
+    "telegram": "^2.6.13",
     "twitter-api-v2": "^1.12.0"
   },
   "devDependencies": {
