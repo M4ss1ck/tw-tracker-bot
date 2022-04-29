@@ -64,7 +64,11 @@ async function newFollowers(currentFollower) {
         const text = `New follower: ${currentFollower.name} (https://twitter.com/${currentFollower.username})`;
         console.log(text);
         await tgClient
-          .sendMessage("me", { message: text })
+          .sendMessage("me", {
+            message: text,
+            linkPreview: false,
+            parseMode: "html",
+          })
           .catch((e) => console.log(e));
       })
       .catch((e) => console.log(e))
@@ -95,7 +99,11 @@ async function newFollowing(currentFollowing) {
         const text = `Now following: ${currentFollowing.name} (https://twitter.com/${currentFollowing.username})`;
         console.log(text);
         await tgClient
-          .sendMessage("me", { message: text })
+          .sendMessage("me", {
+            message: text,
+            linkPreview: false,
+            parseMode: "html",
+          })
           .catch((e) => console.log(e));
       })
       .catch((e) => console.log(e))
@@ -123,7 +131,11 @@ async function trackUnfollows(idList) {
       const f = badPeople[i];
       const text = `${f.name} (https://twitter.com/${f.username}) unfollowed you.`;
       await tgClient
-        .sendMessage("me", { message: text })
+        .sendMessage("me", {
+          message: text,
+          linkPreview: false,
+          parseMode: "html",
+        })
         .catch((e) => console.log(e));
       console.log(text);
       console.log(f);
