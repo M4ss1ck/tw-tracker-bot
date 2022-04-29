@@ -4,7 +4,9 @@
   "description": "Twitter bot for tracking unfollows (and other stuff)",
   "main": "index.js",
   "scripts": {
-    "start": "node -r dotenv/config --experimental-specifier-resolution=node index.js"
+    "start": "node -r dotenv/config --experimental-specifier-resolution=node index.js",
+    "side": "node -r dotenv/config --experimental-specifier-resolution=node sidejobs.js",
+    "studio": "pnpx prisma studio"
   },
   "keywords": [
     "twitter",
