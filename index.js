@@ -159,6 +159,53 @@ async function trackUnfollows(idList) {
   }
 }
 
+async function trackUnfollowings(idList) {
+  const badPeople = await prisma.following
+    .findMany({
+      where: {
+        userId: {
+          notIn: idList,
+        },
+      },
+    })
+    .catch((e) => console.log(e))
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+  if (badPeople.length > 0) {
+    for (let i = 0; i < badPeople.length; i++) {
+      const f = badPeople[i];
+      const text = `You stop following ${f.name} (https://twitter.com/${f.username}).`;
+      await tgClient
+        .sendMessage("me", {
+          message: text,
+          linkPreview: false,
+          parseMode: "html",
+        })
+        .catch((e) => console.log(e));
+      console.log(text);
+      console.log(f);
+      // borrar de la base de datos
+      await prisma.following
+        .delete({
+          where: {
+            userId: f.userId,
+          },
+        })
+        .then(() => {
+          console.log("Deleted");
+        })
+        .catch((e) => console.log(e));
+      // I don't think it's worth it to store who I stopped following
+      // await prisma.deleted.create({
+      //   data: {
+      //     userId: f.userId,
+      //   },
+      // });
+    }
+  }
+}
+
 async function comparison() {
   const followerCount = await prisma.follower
     .count()
@@ -192,7 +239,10 @@ async function followingloop() {
     idList.push(following.id);
     await newFollowing(following);
   }
+  await trackUnfollowings(idList);
 }
+
+// TODO: notFollowing()
 
 async function main() {
   await followingloop();
