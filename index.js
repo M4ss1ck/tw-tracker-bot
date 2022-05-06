@@ -150,11 +150,17 @@ async function trackUnfollows(idList) {
           console.log("Deleted");
         })
         .catch((e) => console.log(e));
-      await prisma.deleted.create({
-        data: {
-          userId: f.userId,
-        },
-      });
+      await prisma.deleted
+        .create({
+          data: {
+            userId: f.userId,
+          },
+        })
+        .catch(() =>
+          console.log(
+            "No se pudo agregar a los Eliminados, probablemente ya exista"
+          )
+        );
     }
   }
 }
