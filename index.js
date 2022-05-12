@@ -252,6 +252,7 @@ async function followingloop() {
 // TODO: notFollowing()
 
 async function main() {
+  // await tgClient.connect();
   await followingloop();
   await followersLoop();
   await comparison();
