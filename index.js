@@ -270,11 +270,7 @@ const task = new AsyncTask(
   },
   (err) => console.log(err)
 );
-const job = new SimpleIntervalJob(
-  { hours: 1, runImmediately: true },
-  task,
-  "check my twitter"
-);
+const job = new SimpleIntervalJob({ hours: 1 }, task, "check my twitter");
 
 scheduler.addSimpleIntervalJob(job);
 
