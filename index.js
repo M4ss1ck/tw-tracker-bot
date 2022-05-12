@@ -2,6 +2,7 @@ import { TwitterApi } from "twitter-api-v2";
 import Prisma from "@prisma/client";
 import { TelegramClient } from "telegram";
 import Sesion from "telegram/sessions";
+import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
 
 const { StringSession } = Sesion;
 
@@ -254,7 +255,27 @@ async function main() {
   await followingloop();
   await followersLoop();
   await comparison();
-  process.exit(0);
+  // await tgClient.disconnect();
+  // process.exit(0);
 }
 
 main();
+
+const scheduler = new ToadScheduler();
+
+const task = new AsyncTask(
+  "simple task",
+  async () => {
+    await main();
+  },
+  (err) => console.log(err)
+);
+const job = new SimpleIntervalJob(
+  { hours: 1, runImmediately: true },
+  task,
+  "check my twitter"
+);
+
+scheduler.addSimpleIntervalJob(job);
+
+console.log(scheduler.getById("check my twitter").getStatus());

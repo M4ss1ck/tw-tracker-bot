@@ -6,6 +6,7 @@ specifiers:
   input: ^1.0.1
   prisma: ^3.12.0
   telegram: ^2.6.13
+  toad-scheduler: ^1.6.0
   twitter-api-v2: ^1.12.0
 
 dependencies:
@@ -13,6 +14,7 @@ dependencies:
   dotenv: 16.0.0
   input: 1.0.1
   telegram: 2.6.13
+  toad-scheduler: 1.6.0
   twitter-api-v2: 1.12.0
 
 devDependencies:
@@ -469,6 +471,10 @@ packages:
 
   /through/2.3.8:
     resolution: {integrity: sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=}
+    dev: false
+
+  /toad-scheduler/1.6.0:
+    resolution: {integrity: sha512-+TdQhHTYLKfjXxLrAi4DgEptoQd99jUcr2teJnQrGlb70MEVrwP4SlVsaQO/dxCsNIM5qmYwZmynQd9tOPDRLQ==}
     dev: false
 
   /ts-custom-error/3.2.0:
