@@ -260,7 +260,7 @@ async function main() {
   // process.exit(0);
 }
 
-main();
+//main();
 
 const scheduler = new ToadScheduler();
 
@@ -271,8 +271,12 @@ const task = new AsyncTask(
   },
   (err) => console.log(err)
 );
-const job = new SimpleIntervalJob({ hours: 8 }, task, "check my twitter");
+const job = new SimpleIntervalJob(
+  { hours: 8, runImmediately: true },
+  task,
+  "check my twitter"
+);
 
 scheduler.addSimpleIntervalJob(job);
 
-console.log(scheduler.getById("check my twitter").getStatus());
+console.log("Status: ", scheduler.getById("check my twitter").getStatus());
