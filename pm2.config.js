@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "twitter-bot",
       script: "dist/index.js",
-      node_args: "-r dotenv/config --experimental-specifier-resolution=node",
+      node_args: "-r dotenv/config",
     },
   ],
 };
