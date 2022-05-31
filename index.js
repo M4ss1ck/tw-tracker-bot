@@ -214,13 +214,17 @@ async function trackUnfollowings(idList) {
 }
 
 async function comparison() {
+  const {
+    followers_count: realFollowersCount,
+    friends_count: realFollowingCount,
+  } = await client.currentUser();
   const followerCount = await prisma.follower
     .count()
     .catch((e) => console.log(e));
   const followingCount = await prisma.following
     .count()
     .catch((e) => console.log(e));
-  const text = `Followers in DB: ${followerCount}\nIn Twitter: ${followers_count}\nFollowing in DB: ${followingCount}\nIn Twitter: ${friends_count}`;
+  const text = `Followers in DB: ${followerCount}\nIn Twitter: ${realFollowersCount}\nFollowing in DB: ${followingCount}\nIn Twitter: ${realFollowingCount}`;
   console.log(text);
   await tgClient
     .sendMessage("me", { message: text })
