@@ -2,7 +2,6 @@ import { TwitterApi } from "twitter-api-v2";
 import Prisma from "@prisma/client";
 import { TelegramClient } from "telegram";
 import Sesion from "telegram/sessions";
-import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
 
 const { StringSession } = Sesion;
 
@@ -214,17 +213,13 @@ async function trackUnfollowings(idList) {
 }
 
 async function comparison() {
-  const {
-    followers_count: realFollowersCount,
-    friends_count: realFollowingCount,
-  } = await client.currentUser();
   const followerCount = await prisma.follower
     .count()
     .catch((e) => console.log(e));
   const followingCount = await prisma.following
     .count()
     .catch((e) => console.log(e));
-  const text = `Followers in DB: ${followerCount}\nIn Twitter: ${realFollowersCount}\nFollowing in DB: ${followingCount}\nIn Twitter: ${realFollowingCount}`;
+  const text = `Followers: ${followerCount}\nFollowing: ${followingCount}`;
   console.log(text);
   await tgClient
     .sendMessage("me", { message: text })
@@ -256,31 +251,9 @@ async function followingloop() {
 // TODO: notFollowing()
 
 async function main() {
-  // await tgClient.connect();
   await followingloop();
   await followersLoop();
   await comparison();
-  // await tgClient.disconnect();
-  // process.exit(0);
 }
 
-//main();
-
-const scheduler = new ToadScheduler();
-
-const task = new AsyncTask(
-  "simple task",
-  async () => {
-    await main();
-  },
-  (err) => console.log(err)
-);
-const job = new SimpleIntervalJob(
-  { hours: 8, runImmediately: true },
-  task,
-  "check my twitter"
-);
-
-scheduler.addSimpleIntervalJob(job);
-
-console.log("Status: ", scheduler.getById("check my twitter").getStatus());
+main();
