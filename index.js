@@ -254,7 +254,7 @@ async function main() {
   await followingloop();
   await followersLoop();
   await comparison();
-  await tgClient.disconnect();
+  process.exit(0);
 }
 
 main();
