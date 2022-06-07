@@ -1,42 +1,44 @@
-import { TwitterApi } from "twitter-api-v2";
-import Prisma from "@prisma/client";
+import { TwitterApi, UserV2 } from "twitter-api-v2";
+import { PrismaClient } from "@prisma/client";
 import { TelegramClient } from "telegram";
-import Sesion from "telegram/sessions";
+import { StringSession } from "telegram/sessions";
 import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
 
-const { StringSession } = Sesion;
-
-const { PrismaClient } = Prisma;
 const prisma = new PrismaClient();
 
 const client = new TwitterApi({
-  appKey: process.env.TWITTER_CONSUMER_KEY,
-  appSecret: process.env.TWITTER_CONSUMER_SECRET,
-  accessToken: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  appKey: process.env.TWITTER_CONSUMER_KEY as string,
+  appSecret: process.env.TWITTER_CONSUMER_SECRET as string,
+  accessToken: process.env.TWITTER_ACCESS_TOKEN_KEY as string,
+  accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET as string,
 });
 
-const apiId = parseInt(process.env.API_ID);
-const apiHash = process.env.API_HASH;
-const stringSession = new StringSession(process.env.SESSION);
+const apiId = parseInt(process.env.API_ID as string);
+const apiHash = process.env.API_HASH as string;
+const stringSession = new StringSession(process.env.SESSION as string);
 
 const tgClient = new TelegramClient(stringSession, apiId, apiHash, {
   connectionRetries: 5,
 });
 
-await tgClient.connect();
+(async () => await tgClient.connect())();
 
-const {
-  name,
-  id_str: id,
-  followers_count,
-  friends_count,
-} = await client.currentUser();
+const id = "2528783778";
+// let name: string, id: string, followers_count: number, friends_count: number;
 
-const summary = `${name} (id: ${id}) has ${followers_count} followers and is following ${friends_count} accounts.`;
-console.log(summary);
+// (async () => {
+//   const user = await client.currentUser();
+//   //console.log(user);
+//   name = user.name;
+//   id = user.id_str;
+//   followers_count = user.followers_count;
+//   friends_count = user.friends_count;
+// })();
 
-async function newFollowers(currentFollower) {
+//const summary = `${name} (id: ${id}) has ${followers_count} followers and is following ${friends_count} accounts.`;
+//console.log(summary);
+
+async function newFollowers(currentFollower: UserV2) {
   const info = await prisma.follower
     .findUnique({
       where: {
@@ -64,14 +66,11 @@ async function newFollowers(currentFollower) {
           })
           .catch((e) => console.log(e));
       })
-      .catch((e) => console.log(e))
-      .finally(async () => {
-        await prisma.$disconnect();
-      });
+      .catch((e) => console.log(e));
   }
 }
 
-async function newFollowing(currentFollowing) {
+async function newFollowing(currentFollowing: UserV2) {
   const info = await prisma.following
     .findUnique({
       where: {
@@ -99,14 +98,11 @@ async function newFollowing(currentFollowing) {
           })
           .catch((e) => console.log(e));
       })
-      .catch((e) => console.log(e))
-      .finally(async () => {
-        await prisma.$disconnect();
-      });
+      .catch((e) => console.log(e));
   }
 }
 
-async function trackUnfollows(idList) {
+async function trackUnfollows(idList: string[]) {
   const badPeople = await prisma.follower
     .findMany({
       where: {
@@ -119,7 +115,7 @@ async function trackUnfollows(idList) {
     .finally(async () => {
       await prisma.$disconnect();
     });
-  if (badPeople.length > 0) {
+  if (badPeople && badPeople.length > 0) {
     for (let i = 0; i < badPeople.length; i++) {
       const f = badPeople[i];
       const text = `${f.name} (https://twitter.com/${f.username}) unfollowed you.`;
@@ -158,7 +154,7 @@ async function trackUnfollows(idList) {
   }
 }
 
-async function trackUnfollowings(idList) {
+async function trackUnfollowings(idList: string[]) {
   const badPeople = await prisma.following
     .findMany({
       where: {
@@ -171,7 +167,7 @@ async function trackUnfollowings(idList) {
     .finally(async () => {
       await prisma.$disconnect();
     });
-  if (badPeople.length > 0) {
+  if (badPeople && badPeople.length > 0) {
     for (let i = 0; i < badPeople.length; i++) {
       const f = badPeople[i];
       const text = `You stop following ${f.name} (https://twitter.com/${f.username}).`;

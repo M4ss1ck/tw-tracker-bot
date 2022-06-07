@@ -2,7 +2,7 @@
   "apps": [
     {
       "name": "twitter-bot",
-      "script": "index.js",
+      "script": "dist/index.js",
       "node_args": "-r dotenv/config",
       "watch": true
     }
