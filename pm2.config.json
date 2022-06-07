@@ -3,7 +3,8 @@
     {
       "name": "twitter-bot",
       "script": "index.js",
-      "node_args": "-r dotenv/config"
+      "node_args": "-r dotenv/config",
+      "watch": true
     }
   ]
 }
