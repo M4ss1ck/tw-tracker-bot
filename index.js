@@ -2,6 +2,7 @@ import { TwitterApi } from "twitter-api-v2";
 import Prisma from "@prisma/client";
 import { TelegramClient } from "telegram";
 import Sesion from "telegram/sessions";
+import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
 
 const { StringSession } = Sesion;
 
@@ -34,14 +35,6 @@ const {
 
 const summary = `${name} (id: ${id}) has ${followers_count} followers and is following ${friends_count} accounts.`;
 console.log(summary);
-
-// const { includes } = await client.v2.me({ expansions: ["pinned_tweet_id"] });
-// console.log(includes.tweets);
-
-// const { data: createdTweet } = await client.v2.tweet(
-//   "first tweet from twitter-api-v2 🚶‍♂️"
-// );
-// console.log("Tweet", createdTweet.id, ":", createdTweet.text);
 
 async function newFollowers(currentFollower) {
   const info = await prisma.follower
@@ -202,12 +195,6 @@ async function trackUnfollowings(idList) {
           console.log("Deleted");
         })
         .catch((e) => console.log(e));
-      // I don't think it's worth it to store who I stopped following
-      // await prisma.deleted.create({
-      //   data: {
-      //     userId: f.userId,
-      //   },
-      // });
     }
   }
 }
@@ -254,7 +241,26 @@ async function main() {
   await followingloop();
   await followersLoop();
   await comparison();
-  process.exit(0);
+  // process.exit(0);
 }
 
-main();
+//main();
+
+const scheduler = new ToadScheduler();
+
+const task = new AsyncTask(
+  "simple task",
+  async () => {
+    await main();
+  },
+  (err) => console.log(err)
+);
+const job = new SimpleIntervalJob(
+  { hours: 8, runImmediately: true },
+  task,
+  "check my twitter"
+);
+
+scheduler.addSimpleIntervalJob(job);
+
+console.log("Status: ", scheduler.getById("check my twitter").getStatus());
